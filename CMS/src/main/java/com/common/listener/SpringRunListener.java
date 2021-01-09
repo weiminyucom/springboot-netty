@@ -12,13 +12,10 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletContext;
 
+
 /**
- * desc:
- *
- * @author : caokunliang
- * creat_date: 2019/5/24 0024
- * creat_time: 20:07
- **/
+ * @author weimin
+ */
 @Data
 @Slf4j
 public class SpringRunListener implements SpringApplicationRunListener {

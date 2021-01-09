@@ -2,6 +2,7 @@ package com.common.netty.server.utils;
 
 import com.common.netty.server.entity.TarsHttpRequest;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.util.CharsetUtil;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -10,6 +11,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map;
 
@@ -87,4 +89,12 @@ public class HttpUtils {
 
         return servletRequest;
     }
+
+    public static String getIpAndPort(ChannelHandlerContext ctx){
+        InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+        String clientIp = socketAddress.getAddress().getHostAddress();
+        String clientPort = String.valueOf(socketAddress.getPort());
+        return clientIp+":"+clientPort;
+    }
+
 }

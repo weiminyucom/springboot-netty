@@ -7,13 +7,10 @@ import javax.servlet.FilterRegistration;
 import javax.servlet.Servlet;
 import javax.servlet.ServletRegistration;
 
+
 /**
- * desc:
- *
- * @author : caokunliang
- * creat_date: 2019/2/12 0012
- * creat_time: 17:21
- **/
+ * @author weimin
+ */
 public class MyServletContext extends MockServletContext{
 
     @Override

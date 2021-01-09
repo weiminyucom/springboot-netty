@@ -11,13 +11,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * desc:
- *
- * @author : caokunliang
- * creat_date: 2019/2/15 0015
- * creat_time: 15:20
- **/
+ * @author weimin
+ */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
     @Override

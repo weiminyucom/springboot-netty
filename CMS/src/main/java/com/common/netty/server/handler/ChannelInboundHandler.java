@@ -21,15 +21,9 @@ public class ChannelInboundHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
-        String clientIp = socketAddress.getAddress().getHostAddress();
-        String clientPort = String.valueOf(socketAddress.getPort());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
-        String clientIp = socketAddress.getAddress().getHostAddress();
-        String clientPort = String.valueOf(socketAddress.getPort());
     }
 }

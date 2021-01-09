@@ -46,7 +46,7 @@ public class SocketDecoder extends ByteToMessageDecoder {
                     return;
                 }
             }
-            if(s.startsWith("device")){
+            if(s.startsWith(HttpHeaders.LONG_CONNECTION_HEAD)){
                 isConn = true;
             }
         }

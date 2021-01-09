@@ -14,7 +14,6 @@ import io.netty.handler.codec.MessageToByteEncoder;
 public class SocketEncoder extends MessageToByteEncoder<TarsHttpResponse> {
     @Override
     protected void encode(ChannelHandlerContext ctx, TarsHttpResponse msg, ByteBuf out) throws Exception {
-        System.out.println("====================");
         out.writeBytes(msg.convertToByte());
     }
 }

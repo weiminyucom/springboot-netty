@@ -3,7 +3,7 @@ package com.common.netty.server;
 import com.common.netty.server.decoder.SocketDecoder;
 import com.common.netty.server.decoder.SocketEncoder;
 import com.common.netty.server.handler.ChannelInboundHandler;
-import com.common.netty.server.handler.WebSocketHandler;
+import com.common.netty.server.handler.AppHandler;
 import com.common.netty.server.handler.WebSocketTimeoutHandler;
 import com.common.util.SpringUtils;
 import io.netty.bootstrap.ServerBootstrap;
@@ -38,7 +38,7 @@ public class NettySocketServer {
     private ServerBootstrap serverBootstrap = new ServerBootstrap();
     private ChannelFuture future;
     private com.common.netty.server.handler.ChannelInboundHandler channelInboundHandler;
-    private WebSocketHandler webSocketHandler;
+    private AppHandler appHandler;
 
     @Value("${netty.server.port}")
     private Integer port;
@@ -48,9 +48,9 @@ public class NettySocketServer {
     private String ip;
 
     @Autowired
-    public NettySocketServer(ChannelInboundHandler channelInboundHandler, WebSocketHandler webSocketHandler) {
+    public NettySocketServer(ChannelInboundHandler channelInboundHandler, AppHandler appHandler) {
         this.channelInboundHandler = channelInboundHandler;
-        this.webSocketHandler = webSocketHandler;
+        this.appHandler = appHandler;
     }
 
 
@@ -69,7 +69,7 @@ public class NettySocketServer {
                     pipeline.addLast("timeoutHandle",new WebSocketTimeoutHandler(timeout, TimeUnit.SECONDS));
                     pipeline.addLast("socketDecoder",new SocketDecoder());
                     pipeline.addLast("socketEncoder", new SocketEncoder());
-                    pipeline.addLast("socketHandler",webSocketHandler);
+                    pipeline.addLast("socketHandler", appHandler);
                 }
             });
             future = serverBootstrap.bind(port).sync();

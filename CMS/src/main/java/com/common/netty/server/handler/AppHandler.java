@@ -34,9 +34,10 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 @Component
 @Slf4j
 @ChannelHandler.Sharable
-public class WebSocketHandler extends SimpleChannelInboundHandler<Object> {
+public class AppHandler extends SimpleChannelInboundHandler<Object> {
 
     private WebSocketServerHandshaker handShaker;
+
     @Autowired
     private DispatcherServlet dispatcherServlet;
 
@@ -44,23 +45,16 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<Object> {
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
         try {
             if (msg instanceof TarsHttpRequest){
-                TarsHttpRequest request = (TarsHttpRequest)msg;
-                if(StringUtils.isEmpty(request.getHeader(HttpHeaders.USER_AGENT))){
-                    log.info("设备长连接请求");
-                }else {
-                    MockHttpServletRequest mockHttpServletRequest = HttpUtils.createServletRequest(request);
-                    MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
-                    dispatcherServlet.service(mockHttpServletRequest,mockHttpServletResponse);
-                    byte[] contentAsByteArray = mockHttpServletResponse.getContentAsByteArray();
-                    System.out.println(new String(contentAsByteArray));
-                    TarsHttpResponse response = new TarsHttpResponse();
-                    response.setStatus(mockHttpServletResponse.getStatus());
-                    System.out.println(mockHttpServletResponse.getHeaderNames());
-                    ChannelFuture channelFuture = ctx.writeAndFlush(contentAsByteArray);
-                    channelFuture.addListener(ChannelFutureListener.CLOSE);
-                }
-            }
-            if(msg instanceof ByteBuf){
+                TarsHttpRequest tarsHttpRequest = (TarsHttpRequest)msg;
+                MockHttpServletRequest mockHttpServletRequest = HttpUtils.createServletRequest(tarsHttpRequest);
+                MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
+                dispatcherServlet.service(mockHttpServletRequest,mockHttpServletResponse);
+                byte[] contentAsByteArray = mockHttpServletResponse.getContentAsByteArray();
+                System.out.println(contentAsByteArray.length);
+                TarsHttpResponse<byte[]> response = new TarsHttpResponse<>();
+                response.setBody(contentAsByteArray);
+                response.setHeader(mockHttpServletResponse);
+                ctx.writeAndFlush(response);
             }
             if(msg instanceof FullHttpRequest){
                 FullHttpRequest fullHttpRequest = (FullHttpRequest)msg;
@@ -85,21 +79,19 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<Object> {
                     handShaker.close(ctx.channel(), close);
                     return;
                 }
-                if (msg instanceof BinaryWebSocketFrame) {
-                }
                 if (msg instanceof TextWebSocketFrame) {
                     TextWebSocketFrame frame = (TextWebSocketFrame) msg;
                     System.out.println(frame.text());
                 }
             }
         }catch (Exception e) {
-            log.error("Netty 数据传输异常", e);
+            log.error("Netty 数据传输异常,ip:port={}",HttpUtils.getIpAndPort(ctx), e);
         }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("netty连接异常", cause);
+        log.error("{}连接异常",HttpUtils.getIpAndPort(ctx), cause);
         ctx.close();
     }
 
