@@ -2,8 +2,8 @@ package com.common.netty.server.decoder;
 
 import com.common.netty.server.NettySocketServer;
 import com.common.netty.server.entity.HttpHeaders;
-import com.common.netty.server.entity.TarsHttpRequest;
 import com.common.netty.server.entity.TarsHttpResponse;
+import com.common.netty.server.utils.HttpUtils;
 import com.common.util.SpringUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,6 +27,7 @@ public class SocketDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         String trim = in.toString(CharsetUtil.UTF_8).trim();
+        System.out.println(trim);
         String[] split = trim.split("\r\n\r\n");
         String[] split1 = split[0].split("\r\n");
         int count = 0;
@@ -71,7 +72,7 @@ public class SocketDecoder extends ByteToMessageDecoder {
             out.add(TarsHttpResponse.convertToObject(s));
             return;
         }
-        out.add(TarsHttpRequest.convertToObject(s));
+        out.add(HttpUtils.createServletRequest(s));
     }
 
 }

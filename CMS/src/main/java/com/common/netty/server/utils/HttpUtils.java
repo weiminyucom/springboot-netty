@@ -1,12 +1,10 @@
 package com.common.netty.server.utils;
 
-import com.common.netty.server.entity.TarsHttpRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.util.CharsetUtil;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
@@ -23,23 +21,43 @@ import java.util.Map;
  */
 public class HttpUtils {
 
-    public static MockHttpServletRequest createServletRequest(TarsHttpRequest request) {
+    public static MockHttpServletRequest createServletRequest(String request) {
         MockHttpServletRequest servletRequest = new MockHttpServletRequest();
 
-        servletRequest.setRequestURI(request.getUrl());
-        servletRequest.setPathInfo(request.getUrl());
-        servletRequest.setMethod(request.getMethod());
+        String[] requestList = request.split("\r\n\r\n");
+        String[] headers = requestList[0].split("\r\n");
+        String[] paths = headers[0].split("\\s+");
 
-        request.getHeaders().forEach(servletRequest::addHeader);
+        servletRequest.setMethod(paths[0].trim());
 
-        servletRequest.setContent(request.getJson().getBytes(CharsetUtil.UTF_8));
-        String query = request.getQuery();
-        if (!StringUtils.isEmpty(query)) {
-            servletRequest.setQueryString(query);
-            String[] split = query.split("&");
-            for (String s : split) {
-                String[] split1 = s.split("=");
-                servletRequest.addParameter(split1[0],split1[1]);
+        String url = paths[1].trim();
+
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(url).build();
+
+        servletRequest.setRequestURI(uriComponents.getPath());
+        servletRequest.setPathInfo(uriComponents.getPath());
+
+
+        servletRequest.setRequestURI(paths[1].trim());
+        servletRequest.setPathInfo(paths[1].trim());
+
+
+        for (int i = 1; i < headers.length; i++) {
+            String[] head = headers[i].split(":");
+            servletRequest.addHeader(head[0].trim(), head.length > 1 ? head[1].trim() : "");
+        }
+
+        servletRequest.setContent(requestList[1].trim().getBytes(CharsetUtil.UTF_8));
+
+        if (uriComponents.getQuery() != null) {
+            servletRequest.setQueryString(uriComponents.getQuery());
+        }
+
+        for (Map.Entry<String, List<String>> entry : uriComponents.getQueryParams().entrySet()) {
+            for (String value : entry.getValue()) {
+                servletRequest.addParameter(
+                        UriUtils.decode(entry.getKey(), "UTF-8"),
+                        UriUtils.decode(value, "UTF-8"));
             }
         }
 
@@ -90,11 +108,11 @@ public class HttpUtils {
         return servletRequest;
     }
 
-    public static String getIpAndPort(ChannelHandlerContext ctx){
+    public static String getIpAndPort(ChannelHandlerContext ctx) {
         InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
         String clientIp = socketAddress.getAddress().getHostAddress();
         String clientPort = String.valueOf(socketAddress.getPort());
-        return clientIp+":"+clientPort;
+        return clientIp + ":" + clientPort;
     }
 
 }

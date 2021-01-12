@@ -1,29 +1,18 @@
 package com.common.netty.server.handler;
 
 import com.common.netty.server.entity.HttpHeaders;
-import com.common.netty.server.entity.TarsHttpRequest;
-import com.common.netty.server.entity.TarsHttpResponse;
 import com.common.netty.server.utils.HttpUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
-import io.netty.handler.stream.ChunkedStream;
-import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.DispatcherServlet;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * @author weimin
@@ -44,17 +33,11 @@ public class AppHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
         try {
-            if (msg instanceof TarsHttpRequest){
-                TarsHttpRequest tarsHttpRequest = (TarsHttpRequest)msg;
-                MockHttpServletRequest mockHttpServletRequest = HttpUtils.createServletRequest(tarsHttpRequest);
+            if(msg instanceof MockHttpServletRequest){
+                MockHttpServletRequest mockHttpServletRequest = (MockHttpServletRequest)msg;
                 MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
                 dispatcherServlet.service(mockHttpServletRequest,mockHttpServletResponse);
-                byte[] contentAsByteArray = mockHttpServletResponse.getContentAsByteArray();
-                System.out.println(contentAsByteArray.length);
-                TarsHttpResponse<byte[]> response = new TarsHttpResponse<>();
-                response.setBody(contentAsByteArray);
-                response.setHeader(mockHttpServletResponse);
-                ctx.writeAndFlush(response);
+                ctx.writeAndFlush(mockHttpServletResponse);
             }
             if(msg instanceof FullHttpRequest){
                 FullHttpRequest fullHttpRequest = (FullHttpRequest)msg;
@@ -71,6 +54,7 @@ public class AppHandler extends SimpleChannelInboundHandler<Object> {
                     response.headers().add(name, mockHttpServletResponse.getHeader(name));
                 }
                 response.headers().add(HttpHeaders.CONTENT_LENGTH,byteBuf.readableBytes());
+
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             }
             if (msg instanceof WebSocketFrame) {
